@@ -1,0 +1,1 @@
+# TODO (Fase 1): dependencias del backend (Flask, flask-cors, pytest, etc.).
