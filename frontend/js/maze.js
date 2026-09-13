@@ -1,0 +1,32 @@
+// Definición del laberinto (única fuente de verdad).
+// Leyenda: "W" pared | "." pellet | "*" poder | " " corredor | "D" puerta (solo fantasmas).
+const MAZE = {
+  cols: 21,
+  rows: 21,
+  tile: 24,
+  grid: [
+    "WWWWWWWWWWWWWWWWWWWWW",
+    "W.........W.........W",
+    "W.WWW.WWW.W.WWW.WWW.W",
+    "W*........W........*W",
+    "W.WWW.WWW.W.WWW.WWW.W",
+    "W...................W",
+    "W.WWW.W...W...W.WWW.W",
+    "W.W...W.......W...W.W",
+    "W.W...W       W...W.W",
+    "W.W...W       W...W.W",
+    "W.W...W   D   W...W.W",
+    "W.W...W   .   W...W.W",
+    "W.W...............W.W",
+    "W.WWW.WWW.W.WWW.WWW.W",
+    "W*........W........*W",
+    "W.WWW.WWW.W.WWW.WWW.W",
+    "W...................W",
+    "W.WWW.WWW.W.WWW.WWW.W",
+    "W*........W........*W",
+    "W.........W.........W",
+    "WWWWWWWWWWWWWWWWWWWWW",
+  ],
+  playerStart: [10, 12],
+  ghostStarts: [[8, 8], [10, 8], [8, 9], [10, 9]],
+};
