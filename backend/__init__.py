@@ -1,1 +1,1 @@
-# TODO (Fase 1): paquete backend.
+"""Paquete del backend: servidor Flask + agentes de fantasma + utilidades de laberinto."""
