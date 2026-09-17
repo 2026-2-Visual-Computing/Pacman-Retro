@@ -10,13 +10,18 @@ function createPlayer(spawn) {
   };
 }
 
-function handlePlayerInput(keyCode) {
+function handlePlayerInput(keyCode, key) {
   const directions = {};
-  directions[UP_ARROW] = "up";
-  directions[DOWN_ARROW] = "down";
-  directions[LEFT_ARROW] = "left";
-  directions[RIGHT_ARROW] = "right";
-  if (game.player && directions[keyCode]) game.player.nextDirection = directions[keyCode];
+  directions[UP_ARROW]    = "up";
+  directions[DOWN_ARROW]  = "down";
+  directions[LEFT_ARROW]  = "left";
+  directions[RIGHT_ARROW]  = "right";
+  directions["w"] = "up";
+  directions["s"] = "down";
+  directions["a"] = "left";
+  directions["d"] = "right";
+  const value = directions[keyCode] ?? (key ? directions[key.toLowerCase()] : undefined);
+  if (game.player && value) game.player.nextDirection = value;
 }
 
 function updatePlayer(player, maze) {

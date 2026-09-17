@@ -16,5 +16,5 @@ function draw() {
 }
 
 function keyPressed() {
-  handlePlayerInput(keyCode);
+  handlePlayerInput(keyCode, key);
 }
