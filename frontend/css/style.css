@@ -1,8 +1,62 @@
 html, body {
   margin: 0;
   padding: 0;
+  background: #111;
+  color: white;
+  font-family: monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
 canvas {
   display: block;
+  image-rendering: pixelated;
 }
+
+
+/*
+Style the page and optional HUD.
+
+  Useful rules:
+
+  body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  canvas {
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  ## Recommended shared helpers
+
+  You will probably want these functions in game.js or a small helper file:
+
+  function isInsideMaze(row, col)
+  function isWall(row, col)
+  function isWalkable(row, col)
+  function directionDelta(direction)
+  function cellToPixel(row, col, cellSize)
+  function pixelToCell(x, y, cellSize)
+*/
+
+
+/*
+NOTE: Keep responsibilities separate.
+
+  - api.js: network
+  - player.js: player
+  - ghost.js: ghosts
+  - game.js: rules and state
+  - sketch.js: p5.js lifecycle
+  - style.css: page appearance
+*/
