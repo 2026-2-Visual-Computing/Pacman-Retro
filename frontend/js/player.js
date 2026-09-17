@@ -28,11 +28,29 @@ function updatePlayer(player, maze) {
   moveEntity(player, maze);
 }
 
+// Mínimo y máximo de apertura de la boca (en grados).
+const MOUTH_MIN = 4;
+const MOUTH_MAX = 45;
+
 function drawPlayer(player, cellSize) {
   push();
   fill("#ffe600");
   noStroke();
-  circle(player.x, player.y, cellSize * 0.72);
+
+  const mouth = player.direction === "none"
+    ? radians(MOUTH_MIN)
+    : radians(MOUTH_MIN) + abs(sin(millis() / 160)) * radians(MOUTH_MAX - MOUTH_MIN);
+
+  const rotations = {
+    right: 0,
+    down: HALF_PI,
+    left: PI,
+    up: -HALF_PI
+  };
+  
+  translate(player.x, player.y);
+  rotate(rotations[player.direction] ?? 0);
+  arc(0, 0, cellSize * 0.72, cellSize * 0.72, mouth, TWO_PI - mouth);
   pop();
 }
 
