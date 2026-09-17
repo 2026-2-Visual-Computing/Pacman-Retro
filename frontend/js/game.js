@@ -15,6 +15,7 @@ const DIRECTIONS = {
 };
 
 function cellCenter(index, size) { return index * size + size / 2; }
+
 function isWalkable(row, col, maze) {
   return maze && row >= 0 && row < maze.rows && col >= 0 && col < maze.cols && maze.grid[row][col] === 1;
 }
