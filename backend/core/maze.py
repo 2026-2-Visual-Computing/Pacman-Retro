@@ -28,6 +28,7 @@ PATH = 1
 _SPAWN_CELLS = {(PLAYER_SPAWN["row"], PLAYER_SPAWN["col"])} | {
     (g["row"], g["col"]) for g in GHOST_SPAWNS
 }
+POWER_PELLET_CELLS = {(p["row"], p["col"]) for p in _DATA["powerPellets"]}
 
 DIRECTIONS = {
     "up": (-1, 0),
@@ -62,11 +63,11 @@ def get_neighbors(row, col):
 
 
 def pellet_cells():
-    """Todas las celdas de camino con punto (todas menos las 5 de spawn)."""
+    """Todas las celdas de camino con punto (todas menos las de spawn y las super bolas)."""
     cells = []
     for r in range(ROWS):
         for c in range(COLS):
-            if GRID[r][c] == PATH and (r, c) not in _SPAWN_CELLS:
+            if GRID[r][c] == PATH and (r, c) not in _SPAWN_CELLS and (r, c) not in POWER_PELLET_CELLS:
                 cells.append({"row": r, "col": c})
     return cells
 
@@ -78,6 +79,9 @@ def to_json():
         "cellSize": CELL_SIZE,
         "grid": GRID,
         "pellets": pellet_cells(),
+        "powerPellets": [
+            {"row": r, "col": c} for r, c in sorted(POWER_PELLET_CELLS)
+        ],
         "playerSpawn": PLAYER_SPAWN,
         "ghostSpawns": GHOST_SPAWNS,
     }

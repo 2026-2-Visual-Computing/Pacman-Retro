@@ -3,6 +3,8 @@ const game = {
   player: null,
   ghosts: [],
   pellets: new Set(),
+  powerPellets: new Set(),
+  powerUntil: 0,
   score: 0,
   lives: 3,
   status: "loading",
@@ -52,6 +54,8 @@ async function initializeGame() {
     game.player = createPlayer(game.maze.playerSpawn);
     game.ghosts = game.maze.ghostSpawns.map(createGhost);
     game.pellets = new Set(game.maze.pellets.map(p => `${p.row},${p.col}`));
+    game.powerPellets = new Set((game.maze.powerPellets || []).map(p => `${p.row},${p.col}`));
+    game.powerUntil = 0;
     game.status = "playing";
   } catch (error) {
     console.error(error);
@@ -65,7 +69,7 @@ function updateGame() {
   collectPellet();
   checkGhostCollisions();
 
-  if (game.pellets.size === 0) game.status = "won";
+  if (game.pellets.size === 0 && game.powerPellets.size === 0) game.status = "won";
   const now = millis();
   if (!game.ghostRequestInProgress && now - game.lastGhostRequest > 300) {
     game.lastGhostRequest = now;
@@ -92,6 +96,9 @@ function drawGame() {
   }
   noStroke(); fill("#ffdca8");
   game.pellets.forEach(key => { const [row, col] = key.split(",").map(Number); circle(cellCenter(col, size), cellCenter(row, size), 4); });
+  const powerBlink = frameCount % 20 < 10;
+  fill(powerBlink ? "white" : "#ff6699");
+  game.powerPellets.forEach(key => { const [row, col] = key.split(",").map(Number); circle(cellCenter(col, size), cellCenter(row, size), size * 0.4); });
   if (game.player) drawPlayer(game.player, size);
   game.ghosts.forEach(ghost => drawGhost(ghost, size));
   drawHud();
@@ -99,7 +106,12 @@ function drawGame() {
 
 function collectPellet() {
   const key = `${game.player.row},${game.player.col}`;
-  if (game.pellets.delete(key)) game.score += 10;
+  if (game.pellets.delete(key)) { game.score += 10; return; }
+  if (game.powerPellets.delete(key)) {
+    game.score += 50;
+    // Gancho para la futura fase: al comer una super bola los fantasmas cambiarán de estado.
+    game.powerUntil = millis() + 8000;
+  }
 }
 
 function checkGhostCollisions() {
