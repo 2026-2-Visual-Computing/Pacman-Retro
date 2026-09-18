@@ -16,6 +16,8 @@ const DIRECTIONS = {
   up: [-1, 0], down: [1, 0], left: [0, -1], right: [0, 1]
 };
 
+const POWER_DURATION = 8000;
+
 function cellCenter(index, size) { return index * size + size / 2; }
 
 function isWalkable(row, col, maze) {
@@ -64,6 +66,7 @@ async function initializeGame() {
 }
 
 function updateGame() {
+  updateGhostStates();
   updatePlayer(game.player, game.maze);
   game.ghosts.forEach(ghost => updateGhost(ghost, game.maze));
   collectPellet();
@@ -109,8 +112,15 @@ function collectPellet() {
   if (game.pellets.delete(key)) { game.score += 10; return; }
   if (game.powerPellets.delete(key)) {
     game.score += 50;
-    // Gancho para la futura fase: al comer una super bola los fantasmas cambiarán de estado.
-    game.powerUntil = millis() + 8000;
+    game.powerUntil = millis() + POWER_DURATION;
+    game.ghosts.forEach(ghost => ghost.stateMachine.transitionTo(GHOST_STATE.FRIGHTENED));
+  }
+}
+
+function updateGhostStates() {
+  if (game.powerUntil > 0 && millis() >= game.powerUntil) {
+    game.powerUntil = 0;
+    game.ghosts.forEach(ghost => ghost.stateMachine.transitionTo(GHOST_STATE.NORMAL));
   }
 }
 
@@ -129,6 +139,7 @@ function loseLife() {
 }
 
 function resetRound() {
+  game.powerUntil = 0;
   resetPlayer(game.player, game.maze.playerSpawn);
   game.ghosts.forEach((ghost, index) => resetGhost(ghost, game.maze.ghostSpawns[index]));
 }
