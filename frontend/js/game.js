@@ -84,7 +84,7 @@ function updateGame() {
 
 function drawGame() {
   if (!game.maze) {
-    fill("white"); textAlign(CENTER, CENTER); text("Cargando...", width / 2, height / 2); return;
+    fill("white"); textAlign(CENTER, CENTER); text("Cargando...", GAME_W / 2, GAME_H / 2); return;
   }
   const size = game.maze.cellSize;
   for (let row = 0; row < game.maze.rows; row++) {
@@ -139,6 +139,6 @@ function drawHud() {
   text(`Score: ${game.score}   Lives: ${game.lives}`, 8, hudY);
   if (game.status === "won" || game.status === "gameOver" || game.status === "error") {
     textAlign(CENTER, CENTER); textSize(26);
-    text(game.status === "won" ? "YOU WIN" : game.status === "gameOver" ? "GAME OVER" : "BACKEND ERROR", width / 2, height / 2);
+    text(game.status === "won" ? "YOU WIN" : game.status === "gameOver" ? "GAME OVER" : "BACKEND ERROR", GAME_W / 2, GAME_H / 2);
   }
 }

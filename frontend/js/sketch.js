@@ -1,7 +1,11 @@
 /* Use this only as the p5.js entry point.*/
 
+const GAME_W = 19 * 24;
+const GAME_H = 15 * 24 + 32;
+const ZOOM = 2;
+
 function setup() {
-  createCanvas(19 * 24, 15 * 24 + 32);
+  createCanvas(GAME_W * ZOOM, GAME_H * ZOOM);
   initializeGame();
 }
 
@@ -12,7 +16,10 @@ function draw() {
     updateGame();
   }
 
+  push();
+  scale(ZOOM);
   drawGame();
+  pop();
 }
 
 function keyPressed() {
