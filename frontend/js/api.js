@@ -8,7 +8,16 @@ async function requestGhostMoves(player, ghosts) {
     const response = await fetch("http://localhost:5000/ghosts/move", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ player, ghosts })
+      body: JSON.stringify({
+        player,
+        ghosts: ghosts.map(ghost => ({
+          id: ghost.id,
+          row: ghost.row,
+          col: ghost.col,
+          direction: ghost.direction,
+          state: ghost.stateMachine ? ghost.stateMachine.getState() : "normal"
+        }))
+      })
     });
 
     if (!response.ok) throw new Error("No se pudieron actualizar los ghosts");

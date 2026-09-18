@@ -7,8 +7,6 @@ from .base_agent import GhostAgent
 
 
 class RandomGhost(GhostAgent):
-    _OPPOSITE = {"up": "down", "down": "up", "left": "right", "right": "left"}
-
     def decide(self, perception):
         options = perception["valid_neighbors"]
         if not options:

@@ -43,6 +43,8 @@ def ghosts_move():
         agent = ghosts.get(state.id)
         if agent is not None:
             agent.row, agent.col, agent.direction = state.row, state.col, state.direction
+            if hasattr(agent, "state"):
+                agent.state = state.state
 
     moves = []
     for state in ghost_states:

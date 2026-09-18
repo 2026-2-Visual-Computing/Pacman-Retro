@@ -18,14 +18,18 @@ mueve al azar, para validar el ciclo completo end-to-end primero.
 import random
 
 from ..core.maze import get_neighbors, DIRECTIONS
+from ..core.pathfinding import manhattan
 
 
 class GhostAgent:
+    _OPPOSITE = {"up": "down", "down": "up", "left": "right", "right": "left"}
+
     def __init__(self, ghost_id, row, col):
         self.id = ghost_id
         self.row = row
         self.col = col
         self.direction = "none"
+        self.state = "normal"
 
     def perceive(self, player, ghosts):
         """Guarda en el propio agente lo que necesita para decidir.
@@ -72,8 +76,34 @@ class GhostAgent:
         self.direction = direction
         return direction
 
+    def _flee(self, perception):
+        """Comportamiento de huida cuando el fantasma está asustado.
+
+        Elige el vecino transitable que más aleja del jugador (mayor
+        distancia Manhattan) y evita revertir sobre sus propios pasos,
+        salvo que sea la única opción. De ese modo intenta escapar de
+        Pacman en vez de perseguirlo.
+        """
+        options = perception["valid_neighbors"]
+        if not options:
+            return "none"
+        forward = [
+            (r, c, d) for r, c, d in options if d != self._OPPOSITE.get(self.direction)
+        ]
+        pool = forward if forward else options
+        player_pos = perception["player_pos"]
+        _r, _c, direction = max(pool, key=lambda n: manhattan((n[0], n[1]), player_pos))
+        return direction
+
     def step(self, player, ghosts):
-        """El ciclo completo: percepción -> decisión -> acción."""
+        """El ciclo completo: percepción -> decisión -> acción.
+
+        Si el fantasma está asustado (state == "frightened"), huye del
+        jugador en lugar de aplicar su personalidad normal.
+        """
         perception = self.perceive(player, ghosts)
-        direction = self.decide(perception)
+        if self.state == "frightened":
+            direction = self._flee(perception)
+        else:
+            direction = self.decide(perception)
         return self.act(direction)

@@ -5,12 +5,16 @@ from dataclasses import dataclass
 from .maze import in_bounds
 
 
+_VALID_STATES = {"normal", "frightened", "eyes"}
+
+
 @dataclass
 class EntityState:
     id: str
     row: int
     col: int
     direction: str
+    state: str = "normal"
 
 
 class InvalidGameState(Exception):
@@ -29,7 +33,10 @@ def _parse_entity(data, required_id=None):
         raise InvalidGameState(f"Posición fuera del laberinto: ({row}, {col})")
 
     entity_id = data.get("id", required_id)
-    return EntityState(id=entity_id, row=row, col=col, direction=direction)
+    state = str(data.get("state", "normal"))
+    if state not in _VALID_STATES:
+        state = "normal"
+    return EntityState(id=entity_id, row=row, col=col, direction=direction, state=state)
 
 
 def parse_move_request(body):
