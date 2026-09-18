@@ -7,6 +7,8 @@ const GHOST_COLORS = {
 
 const FRIGHTENED_BLINK_MS = 2000;
 const GHOST_HOME_WAIT_MS = 1000;
+const GHOST_BASE_SPEED = 1.5;
+const GHOST_EYES_SPEED = 3;
 
 function createGhost(spawn) {
   return {
@@ -18,7 +20,7 @@ function createGhost(spawn) {
     home: { row: spawn.row, col: spawn.col },
     direction: "none",
     nextDirection: "none",
-    speed: 1.5,
+    speed: GHOST_BASE_SPEED,
     color: GHOST_COLORS[spawn.id] || "white",
     respawnAt: 0,
     stateMachine: new GhostStateMachine()
@@ -26,6 +28,7 @@ function createGhost(spawn) {
 }
 
 function updateGhost(ghost, maze) {
+  ghost.speed = ghost.stateMachine.isEyes() ? GHOST_EYES_SPEED : GHOST_BASE_SPEED;
   moveEntity(ghost, maze);
 }
 
