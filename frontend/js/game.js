@@ -70,10 +70,10 @@ async function initializeGame() {
 
 function updateGame() {
   updateGhostStates();
-  respawnEatenGhosts();
   updatePlayer(game.player, game.maze);
   game.ghosts.forEach(ghost => updateGhost(ghost, game.maze));
   collectPellet();
+  respawnEatenGhosts();
   checkGhostCollisions();
 
   if (game.pellets.size === 0 && game.powerPellets.size === 0) game.status = "won";
@@ -118,7 +118,9 @@ function collectPellet() {
     game.score += 50;
     game.powerUntil = millis() + POWER_DURATION;
     game.eatenInCombo = 0;
-    game.ghosts.forEach(ghost => ghost.stateMachine.transitionTo(GHOST_STATE.FRIGHTENED));
+    game.ghosts.forEach(ghost => {
+      if (!ghost.stateMachine.isEyes()) ghost.stateMachine.transitionTo(GHOST_STATE.FRIGHTENED);
+    });
   }
 }
 
@@ -127,19 +129,33 @@ function updateGhostStates() {
     game.powerUntil = 0;
     game.eatenInCombo = 0;
     game.ghosts.forEach(ghost => {
-      ghost.respawnAt = 0;
-      ghost.stateMachine.transitionTo(GHOST_STATE.NORMAL);
+      if (!ghost.stateMachine.isEyes()) {
+        ghost.respawnAt = 0;
+        ghost.stateMachine.transitionTo(GHOST_STATE.NORMAL);
+      }
     });
   }
 }
 
 function respawnEatenGhosts() {
   const now = millis();
-  const powerActive = game.powerUntil > now;
+  const size = game.maze.cellSize;
   game.ghosts.forEach(ghost => {
-    if (ghost.respawnAt > 0 && now >= ghost.respawnAt) {
+    const machine = ghost.stateMachine;
+    if (!machine.isEyes()) return;
+    if (ghost.row !== ghost.home.row || ghost.col !== ghost.home.col) return;
+    if (!atCellCenter(ghost, size)) return;
+    if (ghost.respawnAt === 0) {
+      ghost.x = cellCenter(ghost.home.col, size);
+      ghost.y = cellCenter(ghost.home.row, size);
+      ghost.direction = "none";
+      ghost.nextDirection = "none";
+      ghost.respawnAt = now + GHOST_HOME_WAIT_MS;
+      return;
+    }
+    if (now >= ghost.respawnAt) {
       ghost.respawnAt = 0;
-      ghost.stateMachine.transitionTo(powerActive ? GHOST_STATE.FRIGHTENED : GHOST_STATE.NORMAL);
+      machine.transitionTo(GHOST_STATE.NORMAL);
     }
   });
 }
@@ -148,10 +164,7 @@ function eatGhost(ghost) {
   const index = Math.min(game.eatenInCombo, GHOST_EAT_POINTS.length - 1);
   game.score += GHOST_EAT_POINTS[index];
   game.eatenInCombo++;
-  const spawn = game.maze.ghostSpawns.find(candidate => candidate.id === ghost.id);
   ghost.stateMachine.transitionTo(GHOST_STATE.EYES);
-  repositionGhost(ghost, spawn);
-  ghost.respawnAt = millis() + GHOST_EYES_MS;
 }
 
 function checkGhostCollisions() {

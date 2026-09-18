@@ -6,7 +6,7 @@ const GHOST_COLORS = {
 };
 
 const FRIGHTENED_BLINK_MS = 2000;
-const GHOST_EYES_MS = 1000;
+const GHOST_HOME_WAIT_MS = 1000;
 
 function createGhost(spawn) {
   return {
@@ -15,6 +15,7 @@ function createGhost(spawn) {
     col: spawn.col,
     x: cellCenter(spawn.col, game.maze.cellSize),
     y: cellCenter(spawn.row, game.maze.cellSize),
+    home: { row: spawn.row, col: spawn.col },
     direction: "none",
     nextDirection: "none",
     speed: 1.5,
