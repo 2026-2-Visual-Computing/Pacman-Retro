@@ -18,7 +18,7 @@ mueve al azar, para validar el ciclo completo end-to-end primero.
 import random
 
 from ..core.maze import get_neighbors, DIRECTIONS
-from ..core.pathfinding import manhattan
+from ..core.pathfinding import manhattan, bfs, first_step_direction
 
 
 class GhostAgent:
@@ -30,6 +30,7 @@ class GhostAgent:
         self.col = col
         self.direction = "none"
         self.state = "normal"
+        self._home = (row, col)
 
     def perceive(self, player, ghosts):
         """Guarda en el propio agente lo que necesita para decidir.
@@ -95,15 +96,27 @@ class GhostAgent:
         _r, _c, direction = max(pool, key=lambda n: manhattan((n[0], n[1]), player_pos))
         return direction
 
+    def _return_home(self, perception):
+        """Comportamiento en modo ojos: volver a la casa (el spawn).
+
+        Se usa cuando el fantasma fue comido; camina con BFS hacia su
+        spawn. Si ya está en casa, se queda quieto ("none").
+        """
+        path = bfs((self.row, self.col), self._home)
+        return first_step_direction((self.row, self.col), path)
+
     def step(self, player, ghosts):
         """El ciclo completo: percepción -> decisión -> acción.
 
-        Si el fantasma está asustado (state == "frightened"), huye del
-        jugador en lugar de aplicar su personalidad normal.
+        El estado decide el comportamiento: asustado huye del jugador y en
+        modo ojos vuelve a casa; en cualquier otro caso aplica su
+        personalidad normal.
         """
         perception = self.perceive(player, ghosts)
         if self.state == "frightened":
             direction = self._flee(perception)
+        elif self.state == "eyes":
+            direction = self._return_home(perception)
         else:
             direction = self.decide(perception)
         return self.act(direction)

@@ -94,3 +94,30 @@ def test_all_normal_ghosts_still_chase():
     assert response.status_code == 200
     for gid in ("chaser", "interceptor", "strategic", "random"):
         assert _move_for(response, gid) in {"up", "down", "left", "right"}
+
+
+def test_eyes_ghost_at_home_stands_still():
+    """Un fantasma en modo ojos parado en su casa devuelve 'none'."""
+    ghost = GhostAgent("prueba", 1, 1)
+    ghost.state = "eyes"
+    player = _entity("player", PLAYER_POS["row"], PLAYER_POS["col"])
+
+    direction = ghost.step(player, [_entity("prueba", 1, 1, state="eyes")])
+
+    assert direction == "none"
+
+
+def test_eyes_ghost_travels_toward_home():
+    """Un fantasma en modo ojos lejos de casa se acerca a su spawn."""
+    ghost = GhostAgent("prueba", 1, 1)
+    ghost.row, ghost.col = 7, 9
+    ghost.state = "eyes"
+    player = _entity("player", PLAYER_POS["row"], PLAYER_POS["col"])
+    home = (1, 1)
+
+    direction = ghost.step(player, [_entity("prueba", 7, 9, state="eyes")])
+
+    assert direction in {"up", "down", "left", "right"}
+    dr, dc = {"up": (-1, 0), "down": (1, 0), "left": (0, -1), "right": (0, 1)}[direction]
+    new_pos = (7 + dr, 9 + dc)
+    assert manhattan(new_pos, home) < manhattan((7, 9), home)

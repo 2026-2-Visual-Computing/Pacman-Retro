@@ -6,6 +6,7 @@ const GHOST_COLORS = {
 };
 
 const FRIGHTENED_BLINK_MS = 2000;
+const GHOST_EYES_MS = 1000;
 
 function createGhost(spawn) {
   return {
@@ -18,6 +19,7 @@ function createGhost(spawn) {
     nextDirection: "none",
     speed: 1.5,
     color: GHOST_COLORS[spawn.id] || "white",
+    respawnAt: 0,
     stateMachine: new GhostStateMachine()
   };
 }
@@ -96,13 +98,18 @@ function drawGhostEyesOnly(ghost, cellSize) {
   pop();
 }
 
-function resetGhost(ghost, spawn) {
+function repositionGhost(ghost, spawn) {
   ghost.row = spawn.row;
   ghost.col = spawn.col;
   ghost.x = cellCenter(spawn.col, game.maze.cellSize);
   ghost.y = cellCenter(spawn.row, game.maze.cellSize);
   ghost.direction = "none";
   ghost.nextDirection = "none";
+}
+
+function resetGhost(ghost, spawn) {
+  repositionGhost(ghost, spawn);
+  ghost.respawnAt = 0;
   ghost.stateMachine.reset();
 }
 

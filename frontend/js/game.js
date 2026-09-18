@@ -5,6 +5,7 @@ const game = {
   pellets: new Set(),
   powerPellets: new Set(),
   powerUntil: 0,
+  eatenInCombo: 0,
   score: 0,
   lives: 3,
   status: "loading",
@@ -17,6 +18,7 @@ const DIRECTIONS = {
 };
 
 const POWER_DURATION = 8000;
+const GHOST_EAT_POINTS = [200, 400, 800, 1600];
 
 function cellCenter(index, size) { return index * size + size / 2; }
 
@@ -58,6 +60,7 @@ async function initializeGame() {
     game.pellets = new Set(game.maze.pellets.map(p => `${p.row},${p.col}`));
     game.powerPellets = new Set((game.maze.powerPellets || []).map(p => `${p.row},${p.col}`));
     game.powerUntil = 0;
+    game.eatenInCombo = 0;
     game.status = "playing";
   } catch (error) {
     console.error(error);
@@ -67,6 +70,7 @@ async function initializeGame() {
 
 function updateGame() {
   updateGhostStates();
+  respawnEatenGhosts();
   updatePlayer(game.player, game.maze);
   game.ghosts.forEach(ghost => updateGhost(ghost, game.maze));
   collectPellet();
@@ -113,6 +117,7 @@ function collectPellet() {
   if (game.powerPellets.delete(key)) {
     game.score += 50;
     game.powerUntil = millis() + POWER_DURATION;
+    game.eatenInCombo = 0;
     game.ghosts.forEach(ghost => ghost.stateMachine.transitionTo(GHOST_STATE.FRIGHTENED));
   }
 }
@@ -120,13 +125,41 @@ function collectPellet() {
 function updateGhostStates() {
   if (game.powerUntil > 0 && millis() >= game.powerUntil) {
     game.powerUntil = 0;
-    game.ghosts.forEach(ghost => ghost.stateMachine.transitionTo(GHOST_STATE.NORMAL));
+    game.eatenInCombo = 0;
+    game.ghosts.forEach(ghost => {
+      ghost.respawnAt = 0;
+      ghost.stateMachine.transitionTo(GHOST_STATE.NORMAL);
+    });
   }
+}
+
+function respawnEatenGhosts() {
+  const now = millis();
+  const powerActive = game.powerUntil > now;
+  game.ghosts.forEach(ghost => {
+    if (ghost.respawnAt > 0 && now >= ghost.respawnAt) {
+      ghost.respawnAt = 0;
+      ghost.stateMachine.transitionTo(powerActive ? GHOST_STATE.FRIGHTENED : GHOST_STATE.NORMAL);
+    }
+  });
+}
+
+function eatGhost(ghost) {
+  const index = Math.min(game.eatenInCombo, GHOST_EAT_POINTS.length - 1);
+  game.score += GHOST_EAT_POINTS[index];
+  game.eatenInCombo++;
+  const spawn = game.maze.ghostSpawns.find(candidate => candidate.id === ghost.id);
+  ghost.stateMachine.transitionTo(GHOST_STATE.EYES);
+  repositionGhost(ghost, spawn);
+  ghost.respawnAt = millis() + GHOST_EYES_MS;
 }
 
 function checkGhostCollisions() {
   for (const ghost of game.ghosts) {
-    if (dist(game.player.x, game.player.y, ghost.x, ghost.y) < game.maze.cellSize * 0.55) {
+    if (dist(game.player.x, game.player.y, ghost.x, ghost.y) >= game.maze.cellSize * 0.55) continue;
+    if (ghost.stateMachine.isFrightened()) {
+      eatGhost(ghost);
+    } else if (!ghost.stateMachine.isEyes()) {
       loseLife(); return;
     }
   }
