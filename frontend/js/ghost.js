@@ -5,6 +5,8 @@ const GHOST_COLORS = {
   random: "#ff9d2e"
 };
 
+const FRIGHTENED_BLINK_MS = 2000;
+
 function createGhost(spawn) {
   return {
     id: spawn.id,
@@ -42,8 +44,10 @@ function drawGhost(ghost, cellSize) {
   push();
   noStroke();
   if (machine.isFrightened()) {
-    drawFrightenedGhostBody(ghost, cellSize);
-    drawGhostEyes(ghost, cellSize, "white");
+    const remaining = game.powerUntil - millis();
+    const whiteFlash = remaining < FRIGHTENED_BLINK_MS && Math.floor(millis() / 200) % 2 === 0;
+    drawFrightenedGhostBody(ghost, cellSize, whiteFlash);
+    drawGhostEyes(ghost, cellSize, whiteFlash ? "#2631f7" : "white");
   } else {
     drawNormalGhostBody(ghost, cellSize);
     drawGhostEyes(ghost, cellSize, "#111");
@@ -58,13 +62,14 @@ function drawNormalGhostBody(ghost, cellSize) {
   rect(ghost.x, ghost.y + cellSize * 0.14, cellSize * 0.7, cellSize * 0.28);
 }
 
-function drawFrightenedGhostBody(ghost, cellSize) {
-  fill("#2631f7");
+function drawFrightenedGhostBody(ghost, cellSize, whiteFlash) {
+  fill(whiteFlash ? "white" : "#2631f7");
   circle(ghost.x, ghost.y, cellSize * 0.7);
+  fill(whiteFlash ? "#2631f7" : "white");
   for (let i = 0; i < 4; i++) {
     circle(ghost.x - cellSize * 0.21 + i * cellSize * 0.14, ghost.y + cellSize * 0.31, cellSize * 0.13);
   }
-  fill("white");
+  fill(whiteFlash ? "#2631f7" : "white");
   for (let i = 0; i < 3; i++) {
     circle(ghost.x - cellSize * 0.14 + i * cellSize * 0.14, ghost.y + cellSize * 0.29, cellSize * 0.08);
   }
