@@ -15,7 +15,8 @@ function createGhost(spawn) {
     direction: "none",
     nextDirection: "none",
     speed: 1.5,
-    color: GHOST_COLORS[spawn.id] || "white"
+    color: GHOST_COLORS[spawn.id] || "white",
+    stateMachine: new GhostStateMachine()
   };
 }
 
@@ -31,18 +32,62 @@ function applyGhostMoves(ghosts, response) {
 }
 
 function drawGhost(ghost, cellSize) {
+  const machine = ghost.stateMachine;
+
+  if (machine.isEyes()) {
+    drawGhostEyesOnly(ghost, cellSize);
+    return;
+  }
+
   push();
-  fill(ghost.color);
   noStroke();
+  if (machine.isFrightened()) {
+    drawFrightenedGhostBody(ghost, cellSize);
+    drawGhostEyes(ghost, cellSize, "white");
+  } else {
+    drawNormalGhostBody(ghost, cellSize);
+    drawGhostEyes(ghost, cellSize, "#111");
+  }
+  pop();
+}
+
+function drawNormalGhostBody(ghost, cellSize) {
+  fill(ghost.color);
   circle(ghost.x, ghost.y, cellSize * 0.7);
   rectMode(CENTER);
   rect(ghost.x, ghost.y + cellSize * 0.14, cellSize * 0.7, cellSize * 0.28);
+}
+
+function drawFrightenedGhostBody(ghost, cellSize) {
+  fill("#2631f7");
+  circle(ghost.x, ghost.y, cellSize * 0.7);
+  for (let i = 0; i < 4; i++) {
+    circle(ghost.x - cellSize * 0.21 + i * cellSize * 0.14, ghost.y + cellSize * 0.31, cellSize * 0.13);
+  }
+  fill("white");
+  for (let i = 0; i < 3; i++) {
+    circle(ghost.x - cellSize * 0.14 + i * cellSize * 0.14, ghost.y + cellSize * 0.29, cellSize * 0.08);
+  }
+}
+
+function drawGhostEyes(ghost, cellSize, pupilColor) {
   fill("white");
   circle(ghost.x - cellSize * 0.13, ghost.y - cellSize * 0.08, cellSize * 0.16);
   circle(ghost.x + cellSize * 0.13, ghost.y - cellSize * 0.08, cellSize * 0.16);
-  fill("#111");
+  fill(pupilColor);
   circle(ghost.x - cellSize * 0.13, ghost.y - cellSize * 0.08, cellSize * 0.07);
   circle(ghost.x + cellSize * 0.13, ghost.y - cellSize * 0.08, cellSize * 0.07);
+}
+
+function drawGhostEyesOnly(ghost, cellSize) {
+  push();
+  noStroke();
+  fill("white");
+  circle(ghost.x - cellSize * 0.12, ghost.y, cellSize * 0.32);
+  circle(ghost.x + cellSize * 0.12, ghost.y, cellSize * 0.32);
+  fill("#2631f7");
+  circle(ghost.x - cellSize * 0.12, ghost.y, cellSize * 0.16);
+  circle(ghost.x + cellSize * 0.12, ghost.y, cellSize * 0.16);
   pop();
 }
 
@@ -53,6 +98,7 @@ function resetGhost(ghost, spawn) {
   ghost.y = cellCenter(spawn.row, game.maze.cellSize);
   ghost.direction = "none";
   ghost.nextDirection = "none";
+  ghost.stateMachine.reset();
 }
 
   
