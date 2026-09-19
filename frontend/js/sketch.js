@@ -4,6 +4,10 @@ const GAME_W = 19 * 24;
 const GAME_H = 15 * 24 + 32;
 const ZOOM = 2;
 
+function preload() {
+  game.bonusImages = BONUS_ITEMS_CONFIG.map((item) => loadImage(item.image));
+}
+
 function setup() {
   createCanvas(GAME_W * ZOOM, GAME_H * ZOOM);
   initializeGame();
