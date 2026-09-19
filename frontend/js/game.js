@@ -26,8 +26,9 @@ function isWalkable(row, col, maze) {
   return maze && row >= 0 && row < maze.rows && col >= 0 && col < maze.cols && maze.grid[row][col] === 1;
 }
 function atCellCenter(entity, size) {
-  return Math.abs(entity.x - cellCenter(entity.col, size)) < 0.1 &&
-    Math.abs(entity.y - cellCenter(entity.row, size)) < 0.1;
+  const tolerance = Math.max(entity.speed, 1);
+  return Math.abs(entity.x - cellCenter(entity.col, size)) < tolerance &&
+    Math.abs(entity.y - cellCenter(entity.row, size)) < tolerance;
 }
 function canMove(entity, direction, maze) {
   const delta = DIRECTIONS[direction];
