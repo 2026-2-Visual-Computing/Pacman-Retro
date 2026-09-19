@@ -61,6 +61,7 @@ async function initializeGame() {
     game.powerPellets = new Set((game.maze.powerPellets || []).map(p => `${p.row},${p.col}`));
     game.powerUntil = 0;
     game.eatenInCombo = 0;
+    game.bonus = new BonusItems(BONUS_ITEMS_CONFIG, game.maze.playerSpawn, game.bonusImages);
     game.status = "playing";
   } catch (error) {
     console.error(error);
@@ -71,6 +72,7 @@ async function initializeGame() {
 function updateGame() {
   updateGhostStates();
   updatePlayer(game.player, game.maze);
+  game.score += game.bonus.update(game.player, game.score);
   game.ghosts.forEach(ghost => updateGhost(ghost, game.maze));
   collectPellet();
   respawnEatenGhosts();
@@ -106,6 +108,7 @@ function drawGame() {
   const powerBlink = frameCount % 20 < 10;
   fill(powerBlink ? "white" : "#ff6699");
   game.powerPellets.forEach(key => { const [row, col] = key.split(",").map(Number); circle(cellCenter(col, size), cellCenter(row, size), size * 0.4); });
+  game.bonus.draw(size);
   if (game.player) drawPlayer(game.player, size);
   game.ghosts.forEach(ghost => drawGhost(ghost, size));
   drawHud();
