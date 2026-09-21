@@ -32,7 +32,15 @@ function atCellCenter(entity, size) {
 }
 function canMove(entity, direction, maze) {
   const delta = DIRECTIONS[direction];
-  return delta && isWalkable(entity.row + delta[0], entity.col + delta[1], maze);
+  if (!delta) return false;
+  const nextRow = entity.row + delta[0];
+  const nextCol = entity.col + delta[1];
+  // caso túnel: borde izquierdo 
+  if (entity.row === 7 && nextCol < 0 && direction === "left") return true;
+  // caso túnel: borde derecho 
+  if (entity.row === 7 && nextCol >= maze.cols && direction === "right") return true;
+
+  return isWalkable(nextRow, nextCol, maze);
 }
 function moveEntity(entity, maze) {
   const size = maze.cellSize;
@@ -50,7 +58,19 @@ function moveEntity(entity, maze) {
   entity.x += delta[1] * entity.speed;
   entity.y += delta[0] * entity.speed;
   entity.row = constrain(Math.round((entity.y - size / 2) / size), 0, maze.rows - 1);
-  entity.col = constrain(Math.round((entity.x - size / 2) / size), 0, maze.cols - 1);
+  let newCol = Math.round((entity.x - size / 2) / size);
+
+  if (entity.row === 7 && newCol < 0) {
+    newCol = maze.cols - 1;
+    entity.x = cellCenter(newCol, size);
+  } else if (entity.row === 7 && newCol >= maze.cols) {
+    newCol = 0;
+    entity.x = cellCenter(newCol, size);
+  } else {
+    newCol = constrain(newCol, 0, maze.cols - 1);
+  }
+
+  entity.col = newCol;
 }
 
 async function initializeGame() {
@@ -197,6 +217,7 @@ function resetRound() {
 function drawHud() {
   const hudY = game.maze.rows * game.maze.cellSize + 6;
   fill("white"); noStroke(); textAlign(LEFT, TOP); textSize(16);
+  textFont('Press Start 2P');
   text(`Score: ${game.score}   Lives: ${game.lives}`, 8, hudY);
   if (game.status === "won" || game.status === "gameOver" || game.status === "error") {
     textAlign(CENTER, CENTER); textSize(26);

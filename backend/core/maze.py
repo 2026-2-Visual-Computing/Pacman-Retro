@@ -59,6 +59,13 @@ def get_neighbors(row, col):
         nr, nc = row + dr, col + dc
         if is_walkable(nr, nc):
             neighbors.append((nr, nc, direction))
+
+    # túnel
+    if row == 7 and col == 0:
+        neighbors.append((7, COLS - 1, "left"))
+    if row == 7 and col == COLS - 1:
+        neighbors.append((7, 0, "right"))
+
     return neighbors
 
 

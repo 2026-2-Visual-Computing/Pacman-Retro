@@ -51,6 +51,8 @@ function drawPlayer(player, cellSize) {
   translate(player.x, player.y);
   rotate(rotations[player.direction] ?? 0);
   arc(0, 0, cellSize * 0.72, cellSize * 0.72, mouth, TWO_PI - mouth);
+  fill("black");
+  circle(cellSize * 0.1, -cellSize * 0.22, cellSize * 0.1);
   pop();
 }
 
