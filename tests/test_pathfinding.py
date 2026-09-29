@@ -59,6 +59,7 @@ def test_first_step_direction_translates_path():
     assert first_step_direction(start, [(7, 9), (7, 10)]) == "right"
     assert first_step_direction(start, [start]) == "none"
 
+
 def test_first_step_direction_supports_tunnel_jump():
     assert first_step_direction((7, 1), [(7, 1), (7, 17)]) == "left"
 

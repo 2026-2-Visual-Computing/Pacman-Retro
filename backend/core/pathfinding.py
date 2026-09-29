@@ -20,7 +20,6 @@ def manhattan(a, b):
 
 
 def tunnel_aware_heuristic(a, b):
-    """Admissible Manhattan estimate when a tunnel shortcut is available."""
     estimates = [manhattan(a, b)]
     for tunnel in TUNNELS:
         left = (tunnel["row"], tunnel["leftCol"])
