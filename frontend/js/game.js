@@ -276,7 +276,6 @@ function drawWallCell(row, col, cellSize) {
   fill("#14258c");
   rect(x + inset, y + inset, cellSize - inset * 2, cellSize - inset * 2);
 
-  // Join neighboring wall cells so the thinner walls remain continuous.
   if (connectsLeft) rect(x, y + inset, inset * 2, cellSize - inset * 2);
   if (connectsRight) rect(x + cellSize - inset * 2, y + inset, inset * 2, cellSize - inset * 2);
   if (connectsUp) rect(x + inset, y, cellSize - inset * 2, inset * 2);
@@ -316,7 +315,6 @@ function drawGhostHouse(cellSize) {
     );
   }
 
-  // The door is the only opening in the house.
   stroke("#ff9de2");
   strokeWeight(3);
   const doorX = cellCenter(house.door.col, cellSize);

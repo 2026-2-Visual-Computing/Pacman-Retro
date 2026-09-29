@@ -87,6 +87,16 @@ def test_normal_ghost_chases_by_default():
     assert _move_for(response, "chaser") == "right"
 
 
+def test_normal_ghost_can_enter_tunnel():
+    ghost = GhostAgent("prueba", 7, 1)
+    ghost.valid_neighbors = ghost.perceive(
+        _entity("player", 7, 17), [_entity("prueba", 7, 1)]
+    )["valid_neighbors"]
+
+    assert ghost.act("left") == "left"
+    assert (ghost.row, ghost.col) == (7, 17)
+
+
 def test_all_normal_ghosts_still_chase():
     """Sin super bolas activas, los cuatro agentes mantienen su personalidad."""
     ghost_states = _ghost_states({})

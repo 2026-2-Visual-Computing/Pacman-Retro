@@ -94,8 +94,6 @@ function updateReturnToJail(ghost, maze) {
     }
   }
   ghost.nextDirection = movementDirection;
-  // An eaten ghost can be caught between cells. Give it a direction now so
-  // it can reach the next center instead of waiting forever with "none".
   if (!atCellCenter(ghost, maze.cellSize)) ghost.direction = movementDirection;
   moveEntity(ghost, maze);
 }
@@ -142,7 +140,6 @@ function updateJailExit(ghost, maze) {
 
   const nextTarget = ghost.jailRoute[ghost.jailRouteIndex];
   if (!nextTarget) {
-    // Continue through the door into the corridor.
     ghost.leavingJail = false;
     ghost.nextDirection = "down";
     return;
@@ -254,5 +251,3 @@ function resetGhost(ghost, spawn) {
   ghost.returnRouteIndex = 0;
   ghost.stateMachine.reset();
 }
-
-  
