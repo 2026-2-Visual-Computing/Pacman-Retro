@@ -106,7 +106,19 @@ function moveEntity(entity, maze) {
   }
 
   entity.row = constrain(Math.round((entity.y - size / 2) / size), 0, maze.rows - 1);
-  entity.col = constrain(Math.round((entity.x - size / 2) / size), 0, maze.cols - 1);
+  let newCol = Math.round((entity.x - size / 2) / size);
+
+  if (entity.row === 7 && newCol < 0) {
+    newCol = maze.cols - 1;
+    entity.x = cellCenter(newCol, size);
+  } else if (entity.row === 7 && newCol >= maze.cols) {
+    newCol = 0;
+    entity.x = cellCenter(newCol, size);
+  } else {
+    newCol = constrain(newCol, 0, maze.cols - 1);
+  }
+
+  entity.col = newCol;
 }
 
 function buildReturnRoute(ghost, maze) {
@@ -464,6 +476,7 @@ function randomInteger(min, max) {
 function drawHud() {
   const hudY = game.maze.rows * game.maze.cellSize + 6;
   fill("white"); noStroke(); textAlign(LEFT, TOP); textSize(16);
+  textFont('Press Start 2P');
   text(`Score: ${game.score}   Lives: ${game.lives}`, 8, hudY);
   if (game.status === "won" || game.status === "gameOver" || game.status === "error") {
     textAlign(CENTER, CENTER); textSize(26);

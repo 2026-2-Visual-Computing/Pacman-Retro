@@ -3,7 +3,7 @@ html, body {
   padding: 0;
   background: #111;
   color: white;
-  font-family: monospace;
+  font-family: Press Start 2P, monospace;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,6 +14,7 @@ canvas {
   display: block;
   image-rendering: pixelated;
 }
+
 
 
 /*
