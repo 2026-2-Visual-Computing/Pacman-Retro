@@ -63,17 +63,16 @@ class GhostAgent:
             self.direction = "none"
             return "none"
 
-        dr, dc = DIRECTIONS[direction]
-        new_row, new_col = self.row + dr, self.col + dc
-
-        is_legal = any(
-            (nr, nc) == (new_row, new_col) for nr, nc, _d in self.valid_neighbors
+        neighbor = next(
+            ((nr, nc) for nr, nc, neighbor_direction in self.valid_neighbors
+             if neighbor_direction == direction),
+            None,
         )
-        if not is_legal:
+        if neighbor is None:
             self.direction = "none"
             return "none"
 
-        self.row, self.col = new_row, new_col
+        self.row, self.col = neighbor
         self.direction = direction
         return direction
 

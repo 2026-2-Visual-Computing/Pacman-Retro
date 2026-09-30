@@ -12,11 +12,23 @@ exacta del jugador).
 from collections import deque
 import heapq
 
-from .maze import get_neighbors
+from .maze import get_neighbors, TUNNELS
 
 
 def manhattan(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+
+def tunnel_aware_heuristic(a, b):
+    estimates = [manhattan(a, b)]
+    for tunnel in TUNNELS:
+        left = (tunnel["row"], tunnel["leftCol"])
+        right = (tunnel["row"], tunnel["rightCol"])
+        estimates.extend((
+            manhattan(a, left) + 1 + manhattan(right, b),
+            manhattan(a, right) + 1 + manhattan(left, b),
+        ))
+    return min(estimates)
 
 
 def bfs(start, goal):
@@ -43,11 +55,11 @@ def bfs(start, goal):
 
 
 def astar(start, goal):
-    """Ruta más corta usando distancia Manhattan como heurística."""
+    """Ruta más corta usando una heurística compatible con los túneles."""
     if start == goal:
         return [start]
 
-    open_heap = [(manhattan(start, goal), 0, start, [start])]
+    open_heap = [(tunnel_aware_heuristic(start, goal), 0, start, [start])]
     best_cost = {start: 0}
 
     while open_heap:
@@ -62,7 +74,7 @@ def astar(start, goal):
             if neighbor in best_cost and best_cost[neighbor] <= new_cost:
                 continue
             best_cost[neighbor] = new_cost
-            priority = new_cost + manhattan(neighbor, goal)
+            priority = new_cost + tunnel_aware_heuristic(neighbor, goal)
             heapq.heappush(open_heap, (priority, new_cost, neighbor, path + [neighbor]))
 
     return None
@@ -72,6 +84,9 @@ def first_step_direction(start, path):
     """Convierte el primer paso de una ruta en una dirección ('up'/'down'/...)."""
     if not path or len(path) < 2:
         return "none"
+    for row, col, direction in get_neighbors(*start):
+        if (row, col) == path[1]:
+            return direction
     (r0, c0), (r1, c1) = path[0], path[1]
     dr, dc = r1 - r0, c1 - c0
     if dr == -1:
