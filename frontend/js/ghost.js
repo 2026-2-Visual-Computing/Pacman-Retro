@@ -81,7 +81,8 @@ function updateReturnToJail(ghost, maze) {
 
   const routeDirection = directionBetween(
     { row: ghost.row, col: ghost.col },
-    nextTarget
+    nextTarget,
+    maze
   );
   let movementDirection = routeDirection;
   if (movementDirection === "none" && !atCellCenter(ghost, maze.cellSize)) {
@@ -151,7 +152,11 @@ function updateJailExit(ghost, maze) {
   );
 }
 
-function directionBetween(from, to) {
+function directionBetween(from, to, maze) {
+  for (const tunnel of maze ? tunnelsOnRow(from.row, maze) : []) {
+    if (from.col === tunnel.leftCol && to.col === tunnel.rightCol) return "left";
+    if (from.col === tunnel.rightCol && to.col === tunnel.leftCol) return "right";
+  }
   if (to.row < from.row) return "up";
   if (to.row > from.row) return "down";
   if (to.col < from.col) return "left";

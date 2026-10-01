@@ -60,10 +60,11 @@ function canMove(entity, direction, maze) {
   if (!delta) return false;
   const nextRow = entity.row + delta[0];
   const nextCol = entity.col + delta[1];
-  const tunnel = getTunnelFor(entity, maze);
-  const isTunnelJump = tunnel && nextRow === tunnel.row && (
-    (entity.col === tunnel.leftCol && direction === "left") ||
-    (entity.col === tunnel.rightCol && direction === "right")
+  const isTunnelJump = tunnelsOnRow(entity.row, maze).some(tunnel =>
+    nextRow === tunnel.row && (
+      (entity.col === tunnel.leftCol && direction === "left") ||
+      (entity.col === tunnel.rightCol && direction === "right")
+    )
   );
   if (!isWalkable(nextRow, nextCol, maze) && !isTunnelJump) return false;
   if (entity.isPlayer && isGhostHouseInterior(nextRow, nextCol, maze)) return false;
@@ -72,9 +73,40 @@ function canMove(entity, direction, maze) {
       !entity.stateMachine.isEyes() && isGhostHouseCell(nextRow, nextCol, maze)) return false;
   return true;
 }
-function getTunnelFor(entity, maze) {
-  return (maze.tunnels || []).find(tunnel => tunnel.row === entity.row);
+function tunnelsOnRow(row, maze) {
+  return (maze.tunnels || []).filter(tunnel => tunnel.row === row);
 }
+
+function inTunnelExit(entity, maze) {
+  const size = maze.cellSize;
+  return tunnelsOnRow(entity.row, maze).some(tunnel =>
+    (entity.direction === "left" && entity.col === tunnel.leftCol &&
+      entity.x <= cellCenter(tunnel.leftCol, size)) ||
+    (entity.direction === "right" && entity.col === tunnel.rightCol &&
+      entity.x >= cellCenter(tunnel.rightCol, size))
+  );
+}
+
+// El teletransporte ocurre al salir del canvas, para que la entidad recorra
+// la boca y la celda de apertura completas antes de reaparecer al otro lado.
+function wrapTunnel(entity, maze) {
+  const size = maze.cellSize;
+  const width = maze.cols * size;
+  for (const tunnel of tunnelsOnRow(entity.row, maze)) {
+    if (entity.direction === "left" && entity.col === tunnel.leftCol && entity.x <= 0) {
+      entity.col = tunnel.rightCol;
+      entity.x = cellCenter(entity.col, size);
+      return true;
+    }
+    if (entity.direction === "right" && entity.col === tunnel.rightCol && entity.x >= width) {
+      entity.col = tunnel.leftCol;
+      entity.x = cellCenter(entity.col, size);
+      return true;
+    }
+  }
+  return false;
+}
+
 function moveEntity(entity, maze) {
   const size = maze.cellSize;
   if (atCellCenter(entity, size)) {
@@ -90,35 +122,12 @@ function moveEntity(entity, maze) {
   if (!delta) return;
   entity.x += delta[1] * entity.speed;
   entity.y += delta[0] * entity.speed;
-
-  const tunnel = getTunnelFor(entity, maze);
-  if (tunnel && entity.row === tunnel.row) {
-    if (entity.direction === "left" && entity.x < 0) {
-      entity.col = tunnel.rightCol;
-      entity.x = cellCenter(entity.col, size);
-      return;
-    }
-    if (entity.direction === "right" && entity.x > maze.cols * size) {
-      entity.col = tunnel.leftCol;
-      entity.x = cellCenter(entity.col, size);
-      return;
-    }
-  }
+  if (wrapTunnel(entity, maze)) return;
 
   entity.row = constrain(Math.round((entity.y - size / 2) / size), 0, maze.rows - 1);
-  let newCol = Math.round((entity.x - size / 2) / size);
-
-  if (entity.row === 7 && newCol < 0) {
-    newCol = maze.cols - 1;
-    entity.x = cellCenter(newCol, size);
-  } else if (entity.row === 7 && newCol >= maze.cols) {
-    newCol = 0;
-    entity.x = cellCenter(newCol, size);
-  } else {
-    newCol = constrain(newCol, 0, maze.cols - 1);
+  if (!inTunnelExit(entity, maze)) {
+    entity.col = constrain(Math.round((entity.x - size / 2) / size), 0, maze.cols - 1);
   }
-
-  entity.col = newCol;
 }
 
 function buildReturnRoute(ghost, maze) {

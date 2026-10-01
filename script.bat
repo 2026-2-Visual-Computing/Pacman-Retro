@@ -1,6 +1,9 @@
 @echo off
 
 rem "Init backend"
+cd backend
+call pip install -r requirements.txt
+cd ..
 start "Backend" cmd /k "python -m backend.app"
 
 rem "Init frontend"
